@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.maratbe.secretsv2.TabNavigator">
+
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    <!--    android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">-->
+
+        <include layout="@layout/action_bar" />
+
+        <com.example.maratbe.secretsv2.MyTabLayout
+            android:id="@+id/navigation_tab"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tabs"
+            app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget"
+            app:tabBackground="@color/dark_gray"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="@color/deep_purple"
+            app:tabMode="fixed"
+            app:tabTextColor="@color/light_black"
+            app:tabMaxWidth="0dp"
+            app:tabSelectedTextColor="@color/colorPrimary"/>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include layout="@layout/activity_tab_pager" />
+
+</android.support.design.widget.CoordinatorLayout>

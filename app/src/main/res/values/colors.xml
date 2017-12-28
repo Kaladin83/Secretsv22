@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#5c6cc7</color>
+    <color name="colorPrimaryDark">#525faf</color>
+    <color name="colorAccent">#ff4081</color>
+    <color name="white">#FFFF</color>
+    <color name="deep_purple">#7976a7</color>
+    <color name="transparent_blue">#dde5f5</color>
+    <color name="transparent_green">#e2ecd9</color>
+    <color name="transparent_purple">#e6e1f5</color>
+    <color name="light_black">#7e7d7d</color>
+    <color name="black">#161616</color>
+    <color name="dark_gray">#b1afaf</color>
+    <color name="light_gray">#d4d2d2</color>
+    <color name="light_blue">#caeaf8</color>
+    <color name="light_blue_gradient">#FFECF5FA</color>
+    <color name="dark_blue_gradient">#FF90BEFB</color>
+    <color name="blue_active_bar">#FF86A7E1</color>
+    <color name="blue_status_bar">#FFADC8F4</color>
+    <color name="light_green_gradient">#e2f4db</color>
+    <color name="dark_green_gradient">#FFA3DA8B</color>
+    <color name="green_active_bar">#77b873</color>
+    <color name="green_status_bar">#c9e9a8</color>
+    <color name="light_red_gradient">#FFFDE4E4</color>
+    <color name="dark_red_gradient">#FFF1686B</color>
+    <color name="red_active_bar">#FFF74741</color>
+    <color name="red_status_bar">#FFFFA096</color>
+    <color name="light_yellow_gradient">#FFF6F5C3</color>
+    <color name="dark_yellow_gradient">#FFEBE261</color>
+    <color name="yellow_active_bar">#FFF3D661</color>
+    <color name="yellow_status_bar">#FFF8FB93</color>
+    <color name="title_blue">#FF466CE6</color>
+    <color name="title_green">#FF3DBD43</color>
+    <color name="title_red">#FFF91010</color>
+    <color name="title_orange">#FFFD7E07</color>
+</resources>
