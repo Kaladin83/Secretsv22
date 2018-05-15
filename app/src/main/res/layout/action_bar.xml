@@ -5,20 +5,20 @@
     android:id="@+id/my_action_bar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/action_bar"
-    android:background="@color/dark_gray"
+    android:background="@color/light_black"
     android:orientation="vertical"
     android:theme="@style/AppTheme"
     app:menu="@menu/menu_tab_navigator">
-   <!-- app:subtitleTextColor="@android:color/background_light"
+    <!-- app:subtitleTextColor="@android:color/background_light"
     app:titleTextColor="@android:color/background_light"
     android:textAlignment="center">-->
 
     <TextView
+        android:id="@+id/toolbar_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="My Secrets"
         android:textColor="@color/white"
-        android:textSize="10pt"
-        android:layout_gravity="center"
-        android:id="@+id/toolbar_title" />
+        android:textSize="10pt" />
 </android.support.v7.widget.Toolbar>

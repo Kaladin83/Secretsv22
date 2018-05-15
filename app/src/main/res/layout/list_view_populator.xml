@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/object_layout"
+    android:gravity="center"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/tag_layout"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:layout_height="25dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/tag1_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/tag2_btn"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/tag3_btn"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/hamburger" />
+
+    <TextView
+        android:id="@+id/title_txt"
+        android:layout_width="20dp"
+        android:layout_gravity="end"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/message_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/date_added_txt"
+        android:layout_width="20dp"
+        android:layout_gravity="end"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/status_layout"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/comments_btn"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/comment_num_btn"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:id="@+id/selected_emoji_layout"
+            android:gravity="center_vertical"
+            android:layout_marginStart="50dp"
+            android:layout_width="210dp"
+            android:layout_height="25dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/heart_txt"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/unlike_txt"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/lol_txt"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/sad_txt"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/angry_txt"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/num_of_emojis"
+                android:layout_marginStart="30dp"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/star_txt"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/rating_txt"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/action_layout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/empty_view"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <LinearLayout
+            android:id="@+id/choice_emoji_layout"
+            android:layout_width="270dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/add_comment_btn"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/heart_btn"
+                android:layout_marginStart="5dp"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/unlike_btn"
+                android:layout_marginStart="5dp"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/lol_btn"
+                android:layout_marginStart="5dp"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/sad_btn"
+                android:layout_marginStart="5dp"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:id="@+id/angry_btn"
+                android:layout_marginStart="20dp"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/plus_btn"
+            android:layout_marginStart="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/download_btn"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/share_bnt"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/edit_layout"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="330dp"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/send_edit"
+            android:layout_width="275dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <Button
+            android:layout_gravity="center"
+            android:id="@+id/send_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/separator"
+        android:layout_width="0dp"
+        android:layout_height="7px"/>
+
+</LinearLayout>

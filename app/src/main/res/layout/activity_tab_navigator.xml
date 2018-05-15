@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.maratbe.secretsv2.TabNavigator">
+    tools:context="com.example.maratbe.secrets.TabNavigator">
 
 
     <android.support.design.widget.AppBarLayout
@@ -14,18 +14,15 @@
 
         <include layout="@layout/action_bar" />
 
-        <com.example.maratbe.secretsv2.MyTabLayout
+        <com.example.maratbe.secrets.MyTabLayout
             android:id="@+id/navigation_tab"
             android:layout_width="match_parent"
             android:layout_height="@dimen/tabs"
             app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget"
-            app:tabBackground="@color/dark_gray"
             app:tabGravity="fill"
-            app:tabIndicatorColor="@color/deep_purple"
+            app:tabIndicatorColor="@color/blue_active_bar"
             app:tabMode="fixed"
-            app:tabTextColor="@color/light_black"
-            app:tabMaxWidth="0dp"
-            app:tabSelectedTextColor="@color/colorPrimary"/>
+            app:tabMaxWidth="0dp" />
 
     </android.support.design.widget.AppBarLayout>
 
