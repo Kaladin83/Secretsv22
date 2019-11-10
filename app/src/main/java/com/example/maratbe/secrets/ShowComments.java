@@ -52,9 +52,8 @@ public class ShowComments extends Dialog implements Constants
         this.activity = activity;
         this.tabNavigator = tabNavigator;
         this.listName = listName;
-        //nowShowing = Integer.parseInt(values[1]);
-        this.listOfItems = Util.getList(this.listName);
         this.currentItem = currentItem;
+        this.listOfItems = Util.getList(this.listName);
         this.backgroundColor = backgroundColor;
         this.titleColor = titleColor;
         dialog = this;
@@ -65,7 +64,7 @@ public class ShowComments extends Dialog implements Constants
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.dialog_show_item);
-        MainActivity.getLocalStorage().clearCommentsData();
+       // MainActivity.getLocalStorage().clearCommentsData();
 
         createComments();
 
@@ -312,12 +311,10 @@ public class ShowComments extends Dialog implements Constants
                 if (MainActivity.getLocalStorage().isCommentLike(commentId, MainActivity.getUser(0)))
                 {
                     viewHolder.likeBtn.setSelected(false);
-                    MainActivity.getLocalStorage().removeLike(commentId, MainActivity.getUser(0));
+                    MainActivity.getLocalStorage().updateDbLikes(commentId, MainActivity.getUser(0));
                     MainActivity.getLocalStorage().updateUserScore("comments", MainActivity.getUser(0).getCommentsScore() - 1, MainActivity.getUser(0));
                     likeTxtView.setText(String.valueOf(Integer.parseInt(likeTxtView.getText().toString()) - 1));
-                    AsyncTask.execute(() -> {
-                        MainActivity.getDbInstance().insertLikeComment(commentId, Integer.parseInt(likeTxtView.getText().toString()), true, true);
-                    });
+                    AsyncTask.execute(() -> MainActivity.getDbInstance().insertLikeComment(commentId, Integer.parseInt(likeTxtView.getText().toString()), true, true));
                 }
                 else
                 {
@@ -326,7 +323,7 @@ public class ShowComments extends Dialog implements Constants
                     view.setSelected(true);
                     dislikeBtn.setSelected(false);
                     MainActivity.getLocalStorage().updateUserScore("comments", MainActivity.getUser(0).getCommentsScore() + 1, MainActivity.getUser(0));
-                    if (MainActivity.getLocalStorage().removeDislike(commentId, MainActivity.getUser(0)))
+                    if (MainActivity.getLocalStorage().updateDbDislikes(commentId, MainActivity.getUser(0)))
                     {
                         commentChoiceChanged = true;
                         MainActivity.getLocalStorage().updateUserScore("comments", MainActivity.getUser(0).getCommentsScore() - 1, MainActivity.getUser(0));
@@ -358,7 +355,7 @@ public class ShowComments extends Dialog implements Constants
                 if (MainActivity.getLocalStorage().isCommentDislike(commentId, MainActivity.getUser(0)))
                 {
                     viewHolder.dislikeBtn.setSelected(false);
-                    MainActivity.getLocalStorage().removeDislike(commentId, MainActivity.getUser(0));
+                    MainActivity.getLocalStorage().updateDbDislikes(commentId, MainActivity.getUser(0));
                     dislikeTxtView.setText(String.valueOf(Integer.parseInt(dislikeTxtView.getText().toString()) - 1));
                     MainActivity.getLocalStorage().updateUserScore("comments", MainActivity.getUser(0).getCommentsScore() - 1, MainActivity.getUser(0));
                     AsyncTask.execute(() -> {
@@ -373,7 +370,7 @@ public class ShowComments extends Dialog implements Constants
                     view.setSelected(true);
                     likeBtn.setSelected(false);
                     MainActivity.getLocalStorage().updateUserScore("comments", MainActivity.getUser(0).getCommentsScore() + 1, MainActivity.getUser(0));
-                    if (MainActivity.getLocalStorage().removeLike(commentId, MainActivity.getUser(0)))
+                    if (MainActivity.getLocalStorage().updateDbLikes(commentId, MainActivity.getUser(0)))
                     {
                         commentChoiceChanged = true;
                         MainActivity.getLocalStorage().updateUserScore("comments", MainActivity.getUser(0).getCommentsScore() - 1, MainActivity.getUser(0));

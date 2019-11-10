@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -216,32 +217,31 @@ public abstract class MakeRecyclerView implements Constants{
         lParams = new LinearLayout.LayoutParams(actionButtonSize, actionButtonSize);
         lParams.setMargins(20,13,0,0);
         createButton(true, drawables[2], "", 0, titleTf, holder.plusBtn);
-        holder.plusBtn.setOnClickListener(view -> handleEmojiPanel(view));
+        holder.plusBtn.setOnClickListener(this::handleEmojiPanel);
 
         lParams = new LinearLayout.LayoutParams(actionButtonSize, actionButtonSize);
         lParams.setMargins(20,13,0,0);
         createButton(true, drawables[1], "", 0, titleTf, holder.downloadBtn);
-        holder.downloadBtn.setOnClickListener(view -> {
-        });
+        holder.downloadBtn.setOnClickListener(view -> {});
 
         if (holder instanceof RecyclerViewAdapter.MyViewHolder1)
         {
             holder1 = (RecyclerViewAdapter.MyViewHolder1) holder;
             lParams = new LinearLayout.LayoutParams(actionButtonSize, actionButtonSize);
             lParams.setMargins(0,13,10,0);
-            createButton(true , drawables[0],"",0, titleTf, holder1.shareBtn);
-            holder1.shareBtn.setSelected(Util.findPinned(list.get(i).getItemId()) != -1);
+            createButton(true , drawables[0],"",0, titleTf, holder1.pinBtn);
+            holder1.pinBtn.setSelected(Util.findPinned(list.get(i).getItemId()) != -1);
 
-            holder1.shareBtn.setOnClickListener(view -> {
+            holder1.pinBtn.setOnClickListener(view -> {
                 if (view.isSelected())
                 {
                     view.setSelected(false);
-                    MainActivity.getLocalStorage().removeItem(list.get(i).getItemId(), MainActivity.getUser(0), "pinned");
+                    MainActivity.getLocalStorage().updateDbPinned(list.get(i).getItemId(), MainActivity.getUser(0));
                     MainActivity.getUser(0).getUsersPinned().remove(i);
                 }
                 else {
                     view.setSelected(true);
-                    MainActivity.getLocalStorage().updatePinned(MainActivity.getUser(0), 0, list.get(i).getItemId(), 1, 1);
+                    MainActivity.getLocalStorage().updatePinned(MainActivity.getUser(0), 0, list.get(i).getItemId(), 1);
                     MainActivity.getUser(0).getUsersPinned().add(list.get(i));
                 }
             });
@@ -249,11 +249,10 @@ public abstract class MakeRecyclerView implements Constants{
         else
         {
             holder2 = (RecyclerViewAdapter.MyViewHolder2) holder;
-            holder2.closeBtn.setOnClickListener(view -> {
-                view.setSelected(true);
-                MainActivity.getLocalStorage().removeItem(list.get(i).getItemId(), MainActivity.getUser(0), "pinned");
-                MainActivity.getUser(0).getUsersPinned().remove(Util.findPinned(list.get(i).getItemId()));
-                adapter.notifyDataSetChanged();});
+            holder2.closeBtn.setOnClickListener(view ->
+                updateFavoritesPanel(((CardView) view.getParent().getParent().getParent()), holder2.closeBtn, list.get(i).getItemId()));
+            holder2.closeBtnLayout.setOnClickListener(view ->
+                updateFavoritesPanel(((CardView) view.getParent().getParent()), (Button)holder2.closeBtnLayout.getChildAt(0), list.get(i).getItemId()));
         }
 
     }
@@ -394,7 +393,7 @@ public abstract class MakeRecyclerView implements Constants{
         lParams = new LinearLayout.LayoutParams((int)(mainWidth*0.95 - mainWidth*0.75),actionButtonSize*2);
         createButton(true, drawables[6], "", 0, titleTf, holder.sendBtn);
         holder.sendBtn.setLayoutParams(lParams);
-        holder.sendBtn.setOnClickListener(view -> addComment(view));
+        holder.sendBtn.setOnClickListener(this::addComment);
     }
 
     private void createLinearLayout(int orientation, int color, int border, int visible, LinearLayout layout)
@@ -436,6 +435,8 @@ public abstract class MakeRecyclerView implements Constants{
         }
         txtView.setTypeface(typeface);
     }
+
+    protected abstract void updateFavoritesPanel(CardView ticket, Button button, int itemId);
 
     protected abstract void addComment(View view);
 
@@ -529,12 +530,12 @@ public abstract class MakeRecyclerView implements Constants{
             }
         }
         public class MyViewHolder1 extends MyViewHolder {
-            Button shareBtn;
+            Button pinBtn;
             View separator;
 
             public MyViewHolder1(View v) {
                 super(v);
-                shareBtn = v.findViewById(R.id.share_bnt);
+                pinBtn = v.findViewById(R.id.share_bnt);
                 separator = v.findViewById(R.id.separator);
             }
         }
@@ -542,11 +543,14 @@ public abstract class MakeRecyclerView implements Constants{
         public class MyViewHolder2 extends MyViewHolder {
             CardView cardView;
             Button closeBtn;
+            LinearLayout closeBtnLayout;
 
             public MyViewHolder2(View v) {
                 super(v);
                 cardView =  v.findViewById(R.id.cv);
                 closeBtn = v.findViewById(R.id.close_btn);
+                closeBtnLayout = v.findViewById(R.id.button_layout);
+                closeBtnLayout.setClickable(true);
             }
         }
 

@@ -60,7 +60,7 @@ public class TabNavigator extends AppCompatActivity implements Constants, Serial
 
     public void updateLogin(boolean login) {
         MainActivity.getUser(0).logIn(login);
-        MainActivity.getLocalStorage().setLoggedIn(login);
+        MainActivity.getLocalStorage().setLoggedIn(login, MainActivity.getUser(0).getIdType());
         updateMenu(login);
     }
 
@@ -71,6 +71,7 @@ public class TabNavigator extends AppCompatActivity implements Constants, Serial
         mainMenu.getItem(3).setVisible(isLoggedIn);
         mainMenu.getItem(4).setVisible(isLoggedIn);
         mainMenu.getItem(5).setVisible(isLoggedIn);
+        mainMenu.getItem(6).setVisible(isLoggedIn);
     }
 
     @Override
@@ -122,6 +123,8 @@ public class TabNavigator extends AppCompatActivity implements Constants, Serial
             case R.id.favorites:
                 intent = new Intent(this, Favorites.class);
                 startActivity(intent); break;
+            case R.id.logout:
+                updateLogin(false); break;
         }
         return super.onOptionsItemSelected(item);
     }

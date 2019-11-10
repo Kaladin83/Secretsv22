@@ -26,14 +26,23 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/close_btn"
+        <LinearLayout
+            android:id="@+id/button_layout"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
             android:layout_gravity="end"
-            android:background="@drawable/state_list_close"
-            android:layout_width="20dp"
-            android:layout_height="20dp"/>
+            android:layout_width="33dp"
+            android:layout_height="33dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/close_btn"
+                android:background="@drawable/state_list_close"
+                android:layout_width="20dp"
+                android:layout_height="20dp"/>
+        </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/tag_layout"

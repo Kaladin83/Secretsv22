@@ -2,8 +2,7 @@ package com.example.maratbe.secrets;
 
 import java.util.ArrayList;
 
-public class Item
-{
+public class Item {
     private String user;
     private String text;
     private String title;
@@ -14,11 +13,10 @@ public class Item
     private int numOfComments;
     private int numOfVotes;
     private ArrayList<Comment> comments = new ArrayList<>();
-    private String[] arrayOfTags = new String [3];
+    private String[] arrayOfTags = new String[3];
     private Votes votes;
 
-    public Item(String user, String text, String title, int itemId, String date, int rating, int score, int numOfComments, int numOfVotes, String[] tags)
-    {
+    public Item(String user, String text, String title, int itemId, String date, int rating, int score, int numOfComments, int numOfVotes, String[] tags) {
         setUser(user);
         setText(text);
         setTitle(title);
@@ -31,18 +29,15 @@ public class Item
         setArrayOfTags(tags);
     }
 
-    public Item()
-    {
+    public Item() {
 
     }
 
-    public void setVotes(Votes votes)
-    {
+    public void setVotes(Votes votes) {
         this.votes = votes;
     }
 
-    public Votes getVotes()
-    {
+    public Votes getVotes() {
         return votes;
     }
 
@@ -71,7 +66,7 @@ public class Item
         this.rating = rating;
     }
 
-    public void setScore( int score) {
+    public void setScore(int score) {
         this.score = score;
     }
 
@@ -95,8 +90,7 @@ public class Item
         comments.set(index, comment);
     }
 
-    public void setArrayOfTags(String[] arrayOfTags)
-    {
+    public void setArrayOfTags(String[] arrayOfTags) {
         System.arraycopy(arrayOfTags, 0, this.arrayOfTags, 0, 3);
     }
 
@@ -144,8 +138,7 @@ public class Item
         return arrayOfTags;
     }
 
-    public class Comment
-    {
+    public class Comment {
         private String text;
         private int commentId;
         private int stars;
@@ -154,8 +147,7 @@ public class Item
         private String dateAdded;
         private String userName;
 
-        public Comment(String text, int stars, String dateAdded, String userName)
-        {
+        public Comment(String text, int stars, String dateAdded, String userName) {
             setText(text);
             setStars(stars);
             setDateAdded(dateAdded);
@@ -170,8 +162,7 @@ public class Item
             return stars;
         }
 
-        public int getCommentId()
-        {
+        public int getCommentId() {
             return commentId;
         }
 
@@ -199,8 +190,7 @@ public class Item
             this.stars = stars;
         }
 
-        public void setCommentId(int commentId)
-        {
+        public void setCommentId(int commentId) {
             this.commentId = commentId;
         }
 
@@ -219,8 +209,6 @@ public class Item
         public void setUserName(String userName) {
             this.userName = userName;
         }
-
-
     }
 
     public class Votes {

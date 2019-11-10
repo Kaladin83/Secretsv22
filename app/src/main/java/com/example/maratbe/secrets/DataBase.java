@@ -12,16 +12,16 @@ import java.sql.Connection;
 import java.util.ArrayList;
 
 public class DataBase implements Constants  {
-    public String ip = "sql11.freesqldatabase.com:3306";
-   // public String ip = "den1.mssql4.gear.host:3306";
+    //public String ip = "sql11.freesqldatabase.com:3306";
+    public String ip = "sql7.freesqldatabase.com:3306";
    // public String ip = "10.239.64.62:3306";
     //public String ip = "10.239.189.130:3306";
 
     public String classs = "com.mysql.jdbc.Driver";
     //public String classs = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    public String dbName = "sql11211228";
-    public String userName = "sql11211228";
-    public String password = "3N8weuq9PZ";
+    public String dbName = "sql7311482";
+    public String userName = "sql7311482";
+    public String password = "MUX5Ve77gN";
    /* public String dbName = "mysql";
     public String userName = "marat";
     public String password = "marat";*/
@@ -33,6 +33,36 @@ public class DataBase implements Constants  {
     private Connection conn = null;
     private String itemIds= "";
     private ArrayList<Item> tempItemList ;
+
+    ///
+    //mbeinerdev83@gmail.com
+    ///
+
+         //TABLE DECLARATIONS
+    /*CREATE TABLE sql7311482.users ( user_id INT(10) NOT NULL AUTO_INCREMENT, user_name VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , id_type CHAR(1) NOT NULL , email varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+    registration_date DATE NOT NULL ) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+    ALTER TABLE users ADD PRIMARY KEY( user_id, user_name, id_type, email);
+    ALTER TABLE users ADD INDEX( user_id);
+
+    CREATE TABLE sql7311482.items ( item_id int(10), user_name CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , text TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,  DATE NOT NULL ,
+    score int(2), comments TEXT CHARACTER SET utf8 COLLATE utf8_general_ci, votes int(6)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+    ALTER TABLE items ADD PRIMARY KEY( item_id);
+    ALTER TABLE items ADD INDEX( user_name);
+
+    CREATE TABLE sql7311482.tags ( tag_name VARCHAR(20)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+
+    CREATE TABLE sql7311482.votes ( item_id INT(10) NOT NULL , type CHAR(1) NOT NULL , user_id int(10) NOT NULL ) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+    ALTER TABLE votes ADD PRIMARY KEY( item_id, user_id);
+
+    CREATE TABLE sql7311482.comments  (comment_id  INT(10) NOT NULL ,  text  TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,  stars  INT(1) NOT NULL ,  item_id  INT(10) NOT NULL ,  parent_id  INT(10) NOT NULL ,
+    date_added  DATE NOT NULL ,  user_name  VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL, likes int(6), dislikes int(6) ) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+    ALTER TABLE comments ADD PRIMARY KEY(comment_id);
+    ALTER TABLE comments ADD INDEX(item_id);
+
+    CREATE TABLE sql7311482.tags_and_items ( tag_name VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , item_id INT(10) NOT NULL ) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+    ALTER TABLE tags_and_items ADD PRIMARY KEY(comment_id);
+    ALTER TABLE tags_and_items ADD PRIMARY KEY( tag_name, item_id);*/
+
 
     @SuppressLint("NewApi")
 
@@ -374,6 +404,7 @@ public class DataBase implements Constants  {
             returnCode =  fetchData("fetchUsersVotes", false);
         }
 
+        MainActivity.getLocalStorage().storeUserBasic(user);
         return returnCode;
     }
 
@@ -393,7 +424,7 @@ public class DataBase implements Constants  {
 
     private void createUsersVotesQuery(String userName)
     {
-        query.append("SELECT item_id FROM votes v join users u on (v.user_id = u.user_id) where v.user_name = '");
+        query.append("SELECT item_id FROM votes v join users u on (v.user_id = u.user_id) where u.user_name = '");
         query.append(userName);
         query.append("';");
     }
@@ -431,9 +462,9 @@ public class DataBase implements Constants  {
                 connect();
             }
             createLimitedItemsByUserQuery(pinned);
-            tempItemList = offset == 0? new ArrayList<Item>(): MainActivity.getUser(userIndex).getUsersPinned();
+            tempItemList = offset == 0? new ArrayList<>(): MainActivity.getUser(userIndex).getUsersPinned();
             int returnCode =  fetchData("fetchItemsData", isClose);
-            MainActivity.getUser(userIndex).setUsersItemsPinnedList(tempItemList);
+            MainActivity.getUser(userIndex).setUsersPinned(tempItemList);
             return returnCode;
         }
         return 0;
@@ -666,10 +697,10 @@ public class DataBase implements Constants  {
 
     private void createSelectUserLoginCheckQuery(String email, char idType)
     {
-        query.append("SELECT user_name, email, id_type FROM users ");
+        query.append("SELECT user_name, email, type FROM users ");
         query.append("WHERE UPPER(email) = '");
         query.append(email);
-        query.append("' AND id_type = '");
+        query.append("' AND type = '");
         query.append(idType);
         query.append("';");
     }
@@ -935,7 +966,7 @@ public class DataBase implements Constants  {
         int exists = 0;
         while (rset.next())
         {
-            MainActivity.setUser(new User(rset.getString("user_name"),rset.getString("email"), rset.getString("id_type").charAt(0)), 0);
+            MainActivity.setUser(new User(rset.getString("user_name"),rset.getString("email"), rset.getString("type").charAt(0)), 0);
             exists = 1;
         }
         return exists;
@@ -1010,13 +1041,12 @@ public class DataBase implements Constants  {
         int i = 0;
         while (rset.next())
         {
-            MainActivity.getLocalStorage().updateComments(MainActivity.getUser(userIndex), userIndex, rset.getInt("item_id"), rset.getInt("num_of_comments"), i);
+            MainActivity.getLocalStorage().updateComments(MainActivity.getUser(userIndex), userIndex, rset.getInt("item_id"), rset.getInt("num_of_comments"));
             rc = 0;
             i++;
         }
         return rc;
     }
-
 
     private int fetchUsersItemIds(ResultSet rset) throws SQLException
     {
@@ -1024,7 +1054,7 @@ public class DataBase implements Constants  {
         int i = 0;
         while (rset.next())
         {
-            MainActivity.getLocalStorage().updateSecrets(MainActivity.getUser(userIndex), userIndex, rset.getInt("item_id"), i);
+            MainActivity.getLocalStorage().updateSecrets(MainActivity.getUser(userIndex), userIndex, rset.getInt("item_id"));
             rc = 0;
             i++;
         }
@@ -1037,7 +1067,7 @@ public class DataBase implements Constants  {
         int i = 0;
         while (rset.next())
         {
-            MainActivity.getLocalStorage().updateVotes(MainActivity.getUser(userIndex), userIndex, rset.getInt("item_id"), 1, i);
+            MainActivity.getLocalStorage().updateVotes(MainActivity.getUser(userIndex), userIndex, rset.getInt("item_id"), 1);
             rc = 0;
             i++;
         }
@@ -1056,7 +1086,7 @@ public class DataBase implements Constants  {
 
     private int fetchItemsData(ResultSet rset) throws SQLException
     {
-        String user, text, title, date, firstTagName = "", prevTagName = "";
+        String user, text, title = "", date, firstTagName = "", prevTagName = "";
         int itemId, prevItemId = 0, score, numOfComments, arrayInx = 0, rating = 0, numOfVotes;
         int rc = -1, index = 0;
         String[] tagsArray = new String[3];
@@ -1067,8 +1097,20 @@ public class DataBase implements Constants  {
         {
             itemId = rset.getInt("item_id");
             user = rset.getString("user_name");
-            text = rset.getString("text").substring(rset.getString("text").indexOf("^|")+2).replaceAll("~","'");
-            title = rset.getString("text").substring(0, rset.getString("text").indexOf("^|")).replaceAll("~","'");
+            String temp = rset.getString("text");
+            String[] rawText = temp.split("##");
+
+            if (rawText.length == 2)
+            {
+                title = rawText[0].replaceAll("~","'");
+                text = rawText[1].replaceAll("~","'");
+            }
+            else
+            {
+                title = "";
+                text = rawText[0].replaceAll("~","'");
+            }
+
             date = rset.getString("date");
             score = rset.getInt("score");
             numOfComments = rset.getInt("comments");
@@ -1142,7 +1184,7 @@ public class DataBase implements Constants  {
     }
 
     public void insertIntoTagsItemsBunch(){
-        connect();
+        //connect();
 
         query = new StringBuffer("INSERT INTO tags_and_items (tag_name, item_id) VALUES('sex', 1)");
         insertData(false);
@@ -1419,113 +1461,113 @@ public class DataBase implements Constants  {
     }
 
     public void insertIntoItemBunch(){
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I fucked my teacher in 7th grade', NOW(), 5);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (1, 'Maratik', 'Believe it or not, I don~t care##I fucked my teacher in 7th grade', NOW(), 5);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I won a lottery ticket, and lost all my money on prostitutes', NOW(), 12);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (2, 'Maratik', 'Lottery##I won a lottery ticket, and lost all my money on prostitutes', NOW(), 12);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'trying to get out of this country', NOW(), 10);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (3, 'Marat2', 'A dream##trying to get out of this country', NOW(), 10);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I served in the military as male prostitute', NOW(), 8);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (4, 'Marat2', 'Poor me##I served in the military as male prostitute', NOW(), 8);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I bought 1 kilogram of weed when I was 12 years old', NOW(), 2);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (5, 'Marat2', 'I bought 1 kilogram of weed when I was 12 years old', NOW(), 2);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I~m getting stoned every fucking day - Life is great!!!!', NOW(), 9);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (6, 'Marat2', 'DRUGGS!!!##I~m getting stoned every fucking day - Life is great!!!!', NOW(), 9);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I have killed a rooster. He fucking made me crazy. Every god damn morning screaming like crazy. Who made this bird?!', NOW(), 7);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (7, 'Marat2', 'Stupid birds##I have killed a rooster. He fucking made me crazy. Every god damn morning screaming like crazy. Who made this bird?!', NOW(), 7);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'My boss made my life miserable for 5 months, until I force-fucked her after working hours. Now she always smiling. What should I do now?', NOW(), 4);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (8, 'Marat2', 'My boss made my life miserable for 5 months, until I force-fucked her after working hours. Now she always smiling. What should I do now?', NOW(), 4);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Greeting humans, I~m an alien from Mars!!!', NOW(), 6);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (9, 'Maratik', 'Greetings##Greeting humans, I~m an alien from Mars!!!', NOW(), 6);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I have created a great application, but it is a secret - I don~t know why', NOW(), 11);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (10, 'Maratik', 'I have created a great application, but it is a secret - I don~t know why', NOW(), 11);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I found a gun while going back home. As it appeared later on my mother-in-law lost something near my house, and every time I see her strolling back and forth. I~m afraid she killed someone with it and forgot to remove her finger prints.', NOW(), 3);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (11, 'Marat2', 'I found a gun while going back home. As it appeared later on my mother-in-law lost something near my house, and every time I see her strolling back and forth. I~m afraid she killed someone with it and forgot to remove her finger prints.', NOW(), 3);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'My wife thinks that I~m he best husband in the world, I~m not revealing who I am, as I~m afraid that other women will sexually harass me and I might cheat', NOW(), 1);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (12, 'Maratik', 'My wife thinks that I~m he best husband in the world, I~m not revealing who I am, as I~m afraid that other women will sexually harass me and I might cheat', NOW(), 1);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Good things happen to smart people', NOW(), 14);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (13, 'Marat2', 'Smart words##Good things happen to smart people', NOW(), 14);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I~m hungry!!! Someone please give food.', NOW(), 13);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (14, 'Maratik', 'Please...##I~m hungry!!! Someone please give food.', NOW(), 13);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I want to go to the \"Aerosmith\" concert tomorrow in Tel Aviv, someone can geve me a ride from Haifa? Public transportation is on strike, and I have no other way to get there', NOW(), 16);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (15, 'Maratik', 'Need a ride##I want to go to the \"Aerosmith\" concert tomorrow in Tel Aviv, someone can geve me a ride from Haifa? Public transportation is on strike, and I have no other way to get there', NOW(), 16);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Feeling good!!! Who feel the same? please share', NOW(), 15);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (16, 'Marat2', 'Feeling great##Feeling good!!! Who feel the same? please share', NOW(), 15);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I~m feeling lonely. Who else is lonely? let~s talk.', NOW(), 9);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (17, 'Maratik', 'Feeling lonely##I~m feeling lonely. Who else is lonely? let~s talk.', NOW(), 9);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Just read the best fantasy book ever!!! Called \"The way of kings\", by Brandon Sanderson', NOW(), 8);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (18, 'Marat2', 'Just read the best fantasy book ever!!! Called \"The way of kings\", by Brandon Sanderson', NOW(), 8);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I want to get drunk, but hate drinking alone. I live in Tel Aviv, who wants to join?', NOW(), 10);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (19, 'Marat2', 'Drink, anybody?##I want to get drunk, but hate drinking alone. I live in Tel Aviv, who wants to join?', NOW(), 10);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'My tongue does not hurt anymore. All you pretty ladies who did not had an orgasm in a while, and want one, please leave your phone number in my facebook page', NOW(), 7); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (20, 'Marat2', 'Advertisement##My tongue does not hurt anymore. All you pretty ladies who did not had an orgasm in a while, and want one, please leave your phone number in my facebook page', NOW(), 7); ");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I want to buy a a new car with budget of 30000$. I have a dilemma. Please suggest, what is the best choice for this budget.', NOW(), 11);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (21, 'Maratik', 'I want to buy a a new car with budget of 30000$. I have a dilemma. Please suggest, what is the best choice for this budget.', NOW(), 11);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'What is the best Sci-Fi movie you have ever watched?', NOW(), 6);");
+//        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (21, 'Maratik', 'Looking for recommendations##What is the best Sci-Fi movie you have ever watched?', NOW(), 6);");
+//        insertData(false);
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (22, 'Maratik', 'I~m looking for a serious relationship. I work in high-tech industry and will make my chosen lady a queen. Please contact me on facebook or Tweeter', NOW(), 3);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I~m looking for a serious relationship. I work in high-tech industry and will make my chosen lady a queen. Please contact me on facebook or Tweeter', NOW(), 3);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (23, 'Marat2', 'Looking for new partners for Escape room activity. Please contact me via facebook', NOW(), 12);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Looking for new partners for Escape room activity. Please contact me via facebook', NOW(), 12);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (24, 'Maratik', 'I~m gay, and I~m proud of it!!!', NOW(), 4);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I~m gay, and I~m proud of it!!!', NOW(), 4);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (25, 'Marat2', 'Starting new job at the White House, Washington DC. I~m so exited!!!', NOW(), 5);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Starting new job at the White House, Washington DC. I~m so exited!!!', NOW(), 5);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (26, 'Maratik', 'Hooray!!!!##5 years of treatments. I~m finally pregnant!!! Hooray!!!', NOW(), 2);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', '5 years of treatments. I~m finally pregnant!!! Hooray!!!', NOW(), 2);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (27, 'Marat2', 'Today I ate the best pizza ever. It~S called Pizza hut, who ate it and loved it as well?', NOW(), 1); ");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Today I ate the best pizza ever. It~S called Pizza hut, who ate it and loved it as well?', NOW(), 1); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (28, 'Maratik', 'Sad childhood##When I was 5 years old, I have seen my father~s friend jerking off while looking at me. I did not realize back then what he was doing, but now I do, but I don~t what to tell by daddy, he still his best friend.', NOW(), 13);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'When I was 5 years old, I have seen my father~s friend jerking off while looking at me. I did not realize back then what he was doing, but now I do, but I don~t what to tell by daddy, he still his best friend.', NOW(), 13);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (29, 'Maratik', 'My first kiss was my brother in law. I think it was a pity kiss, but still it felt great. I was 16 back then.', NOW(), 14);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'My first kiss was my brother in law. I think it was a pity kiss, but still it felt great. I was 16 back then.', NOW(), 14);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (30, 'Marat2', 'Fuck it!##I don~t believe, what happened last night. I accidentally shagged by friend from high school on my wedding day.', NOW(), 15); ");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I don~t believe, what happened last night. I accidentally shagged by friend from high school on my wedding day.', NOW(), 15); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (31, 'Marat2', 'Oh Shit...##When I was 10 years old, I accidentally killed a cat by pulling to hard on a leash which I put on him', NOW(), 16); ");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'When I was 10 years old, I accidentally killed a cat by pulling to hard on a leash which I put on him', NOW(), 16); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (32, 'Marat2', 'I~m going to have a daughter. It~s a secret because I~m very superstitious', NOW(), 17);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I~m going to have a daughter. It~s a secret because I~m very superstitious', NOW(), 17);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (33, 'Marat2', 'I just cheated on my girlfriend. It~s a weird feeling. as I~m proud and despise myself. The girl is very hot', NOW(), 18);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I just cheated on my girlfriend. It~s a weird feeling. as I~m proud and despise myself. The girl is very hot', NOW(), 18);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (34, 'Marat2', 'When I was 8 years old, I broke my play station and told my parents that it was my older brother who tends to ruin things. They believed me over him, and bought me a new one, a better one. What could I do? I was afraid they won~t by me a new one if they know it was me', NOW(), 19); ");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'When I was 8 years old, I broke my play station and told my parents that it was my older brother who tends to ruin things. They believed me over him, and bought me a new one, a better one. What could I do? I was afraid they won~t by me a new one if they know it was me', NOW(), 19); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (35, 'Marat2', 'I~m going to meet my teacher, whom I fucked when I was 15. I hope she still hot as she was 10 years ago. Who know what will happen', NOW(), 20);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'I~m going to meet my teacher, whom I fucked when I was 15. I hope she still hot as she was 10 years ago. Who know what will happen', NOW(), 20);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (36, 'Maratik', 'I just won 200000 shekels on a lottery. I~m so happy!', NOW(), 21);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I just won 200000 shekels on a lottery. I~m so happy!', NOW(), 21);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (37, 'Maratik', 'I just met my teacher, whom I fucked 10 years ago. It~s amazing how people change, or I wasn~t that picky?', NOW(), 22);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I just met my teacher, whom I fucked 10 years ago. It~s amazing how people change, or I wasn~t that picky?', NOW(), 22);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (38, 'Marat2', 'When I was 7, my sister bought me a car. I lost it, but I told her that bullies took it from me, as I did not want her to know that it was my fault', NOW(), 23);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'When I was 7, my sister bought me a car. I lost it, but I told her that bullies took it from me, as I did not want her to know that it was my fault', NOW(), 23);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (39, 'Marat2', 'Another day in the office... Wish I was somewhere far far away ', NOW(), 17);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Another day in the office... Wish I was somewhere far far away ', NOW(), 17);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (40, 'Maratik', 'Need for 3 people to join our paint ball team for next Sunday. We are located in New York, if you wish to join contact me via facebook', NOW(), 18);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Need for 3 people to join our paint ball team for next Sunday. We are located in New York, if you wish to join contact me via facebook', NOW(), 18);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (41, 'Maratik', 'Looking for a mate for my female Bull Terrier. If you are serious and you male has all necessary credentials, please contact me.', NOW(), 19);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Looking for a mate for my female Bull Terrier. If you are serious and you male has all necessary credentials, please contact me.', NOW(), 19);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (42, 'Marat2', 'The day started great, just woke up tp realize that I~ll going to have a son', NOW(), 20);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'The day started great, just woke up tp realize that I~ll going to have a son', NOW(), 20);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (43, 'Maratik', 'Canada, here I come. Just received my PR this morning. I~m so exited!!!', NOW(), 21);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Canada, here I come. Just received my PR this morning. I~m so exited!!!', NOW(), 21);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (44, 'Marat2', 'The new book of Stormlight Archive is coming out tomorrow, I can hardly wait.... So exited', NOW(), 22);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'The new book of Stormlight Archive is coming out tomorrow, I can hardly wait.... So exited', NOW(), 22);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (45, 'Marat2', 'Just met a girl of my dreams: Tall, blonde and has a great sense of humor. I hope she~ll find me as attractive as I find her. Wish me luck.', NOW(), 23);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Just met a girl of my dreams: Tall, blonde and has a great sense of humor. I hope she~ll find me as attractive as I find her. Wish me luck.', NOW(), 23);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (46, 'Marat2', 'R.I.P by beloved granny. You made my life much better when I was little. Will always love you.', NOW(), 24);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'R.I.P by beloved granny. You made my life much better when I was little. Will always love you.', NOW(), 24);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (47, 'Maratik', 'My son just get into Harvard! I~m so exited for him. We will have a Harvard graduated lawyer in our family. Proud of you, my son.', NOW(), 25);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'My son just get into Harvard! I~m so exited for him. We will have a Harvard graduated lawyer in our family. Proud of you, my son.', NOW(), 25);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (48, 'Maratik', 'Can someone recommend me on a great comedy. All recent movies that I have watched were mediocre at best.', NOW(), 26);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Can someone recommend me on a great comedy. All recent movies that I have watched were mediocre at best.', NOW(), 26);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (49, 'Maratik', 'I~m so happy California legalized weed. Who as happy as I am?', NOW(), 27);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'I~m so happy California legalized weed. Who as happy as I am?', NOW(), 27);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (50, 'Marat2', 'Donald Trumps is my hero! Not!', NOW(), 28);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'Donald Trumps is my hero! Not!', NOW(), 28);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (51, 'Maratik', 'Just discovered my daughter is a lesbian. I hope she will change her mind', NOW(), 29);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Just discovered my daughter is a lesbian. I hope she will change her mind', NOW(), 29);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (52, 'Marat2', 'What can I buy to 7 years old nephew, who does not appreciate toys?', NOW(), 30);");
         insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat2', 'What can I buy to 7 years old nephew, who does not appreciate toys?', NOW(), 30);");
-        insertData(false);
-        query = new StringBuffer("insert into items (user_name, text, date, score) values ('Marat1', 'Oh my god. I just witnessed in live a harsh car accident. 3 cars where smashed by a semi-trailer. I hope no one died.', NOW(), 31);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (53, 'Maratik', 'Oh my god. I just witnessed in live a harsh car accident. 3 cars where smashed by a semi-trailer. I hope no one died.', NOW(), 31);");
         insertData(false);
     }
 

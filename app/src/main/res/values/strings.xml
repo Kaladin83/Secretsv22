@@ -4,6 +4,7 @@
     <string name="fb_login_protocol_scheme">fb975867379249001</string>
     <string name="menu_account">My account</string>
     <string name="menu_login">Login</string>
+    <string name="menu_logout">Log out</string>
     <string name="menu_register">Register</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_theme">Themes</string>
@@ -59,4 +60,5 @@
     <string name="show_comments_trailer_txt">No more comments</string>
     <string name="secrets_filter_layout">Secrets filter</string>
     <string name="tags_filter_layout">Tags filter</string>
+    <string name="favorites_0_secrets">You have 0 pinned secrets</string>
 </resources>

@@ -1,14 +1,17 @@
 package com.example.maratbe.secrets;
 
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -19,10 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-
-/**
- * Created by MARATBE on 4/8/2018.
- */
 
 public class Favorites  extends AppCompatActivity implements Constants, View.OnClickListener {
     private LinearLayout progressBarLayout, headerLayout;
@@ -41,6 +40,7 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
     private boolean commentPanelVisible, emojiPanelVisible;
     private ShowStars stars;
     private Item.Comment newComment;
+    private boolean whichColor = true;
     private Task task;
 
     public enum Task {
@@ -57,40 +57,56 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
         mainLayout.setGravity(Gravity.CENTER);
 
         createHeaderLayout();
-        populateListView();
-        createProgressBar();
-        fillUpArrays();
-        settingValues();
+        numberOfItems = MainActivity.getUser(0).getNumOfPinned();
+        if (numberOfItems > 0)
+        {
+            populateListView();
+            createProgressBar();
+            fillUpArrays();
+            settingValues();
 
-        layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        recyclerView.setAdapter(makeRecyclerView.getRecyclerViewAdapter());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setBackgroundColor(theme.getGradientColors()[1]);
-        recyclerView.addOnScrollListener(new MyRecyclerScroll(layoutManager, listName, 0) {
-            @Override
-            public void onLoadMore() {
-                if (nextPrev < arrayOfItemIdsLengths.length - 1) {
-                    task = Task.FETCH_ITEMS;
-                    nextPrev++;
-                    nowShowing += arrayOfItemIdsLengths[nextPrev];
-                    new ProgressTask().execute();
-                    layoutManager.scrollToPositionWithOffset(nowShowing - 1, 0);
+            layoutManager = new LinearLayoutManager(getApplicationContext());
+            recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+            recyclerView.setAdapter(makeRecyclerView.getRecyclerViewAdapter());
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setBackgroundColor(theme.getGradientColors()[1]);
+            recyclerView.addOnScrollListener(new MyRecyclerScroll(layoutManager, listName, 0) {
+                @Override
+                public void onLoadMore() {
+                    if (nextPrev < arrayOfItemIdsLengths.length - 1) {
+                        task = Task.FETCH_ITEMS;
+                        nextPrev++;
+                        nowShowing += arrayOfItemIdsLengths[nextPrev];
+                        new ProgressTask().execute();
+                        layoutManager.scrollToPositionWithOffset(nowShowing - 1, 0);
+                    }
                 }
-            }
-        });
+            });
 
-        RelativeLayout.LayoutParams rParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-        mainLayout.addView(progressBarLayout, rParams);
+            RelativeLayout.LayoutParams rParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+            mainLayout.addView(progressBarLayout, rParams);
 
-        showSecrets();
+            showSecrets();
+        }
+        else
+        {
+            numOfItemsTxt.setText(R.string.favorites_0_secrets);
+        }
+
     }
 
     private void fillUpArrays()
     {
         int size;
-        numberOfItems = MainActivity.getUser(userIndex).getNumOfPinned();
-        size = numberOfItems % MAX_ITEMS_SHOWS == 0? numberOfItems / MAX_ITEMS_SHOWS: numberOfItems / MAX_ITEMS_SHOWS +1;
+        if (numberOfItems < MAX_ITEMS_SHOWS)
+        {
+            size = 1;
+        }
+        else
+        {
+            size = numberOfItems % MAX_ITEMS_SHOWS == 0? numberOfItems / MAX_ITEMS_SHOWS: numberOfItems / MAX_ITEMS_SHOWS +1;
+        }
+
         fillUpArrays(size);
         nowShowing = arrayOfItemIdsLengths[0];
     }
@@ -103,7 +119,7 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
             if (i == arrayOfItemIdsLengths.length - 1)
             {
                 arrayOfItemIdsLengths[i] = numberOfItems % MAX_ITEMS_SHOWS;
-                arrayOfBounds[i] = String.valueOf(i*MAX_ITEMS_SHOWS)+","+String.valueOf(i*10+(numberOfItems % MAX_ITEMS_SHOWS));
+                arrayOfBounds[i] = String.valueOf(i*MAX_ITEMS_SHOWS)+","+ (numberOfItems % MAX_ITEMS_SHOWS == 0? MAX_ITEMS_SHOWS :String.valueOf(i*10+(numberOfItems % MAX_ITEMS_SHOWS)));
             }
             else
             {
@@ -118,8 +134,7 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
         String[] bounds =  arrayOfBounds[nextPrev].split(",");
         list = MainActivity.getUser(userIndex).getUsersPinned();
         sublist = new ArrayList<>(MainActivity.getUser(userIndex).getUsersPinned().subList(Integer.parseInt(bounds[0]), Integer.parseInt(bounds[1])));
-        String numOfItems = "Showing "+ Integer.parseInt(bounds[1]) + " secrets out of "+ numberOfItems + txt;
-        numOfItemsTxt.setText(numOfItems);
+        updateHeader(Integer.parseInt(bounds[1]), numberOfItems);
     }
 
     private void createHeaderLayout() {
@@ -164,7 +179,7 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
         progressBar.getIndeterminateDrawable().setColorFilter(theme.getSelectedTitleColor()[2], android.graphics.PorterDuff.Mode.MULTIPLY);
 
         lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        TextView txt = createTextView(getString(R.string.loading_secrets_data), 15, 0, Color.BLACK);
+        TextView txt = createTextView(getString(R.string.loading_comments), 15, 0, Color.BLACK);
         txt.setTypeface(theme.getTitleTypeface());
         lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         LinearLayout layout = new LinearLayout(this);
@@ -184,6 +199,25 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
     private void populateListView()
     {
         makeRecyclerView = new MakeRecyclerView(this, this) {
+            @Override
+            protected void updateFavoritesPanel(CardView ticket, Button button, int itemId) {
+                int maxSize = MainActivity.getUser(0).getUsersPinned().size() - 1;
+                updateHeader(maxSize <MAX_ITEMS_SHOWS? maxSize: MAX_ITEMS_SHOWS, maxSize);
+                new Thread(() -> {
+                    try {
+                        updateCardBackground(ticket, button, ContextCompat.getDrawable(favorites, R.drawable.note3), true);
+                        Thread.sleep(500);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    MainActivity.getLocalStorage().updateDbPinned(itemId, MainActivity.getUser(0));
+                    MainActivity.getUser(0).getUsersPinned().remove(Util.findPinned(itemId));
+                    makeRecyclerView.getRecyclerViewAdapter().notifyDataSetChanged();
+                    updateCardBackground(ticket, button, ContextCompat.getDrawable(favorites, R.drawable.note2), false);
+                }).start();
+            }
+
             @Override
             public void addComment(View view)
             {
@@ -246,7 +280,8 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
                         LinearLayout selectedEmojisPanel = (LinearLayout) ((LinearLayout) object.getChildAt(STATUS_LAYOUT+1)).getChildAt(SELECTED_EMOJI_LAYOUT);
                         TextView emojiText = (TextView)selectedEmojisPanel.getChildAt(NUM_OF_EMOJIS_TXT);
                         emojiText.setText(String.valueOf(Integer.parseInt(emojiText.getText().toString()) - 1));
-                        MainActivity.getLocalStorage().removeItem(list.get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                        //MainActivity.getLocalStorage().removeItem(list.get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                        MainActivity.getLocalStorage().updateDbVotes(list.get(currentObjectId).getItemId(), MainActivity.getUser(0));
                         showSecrets();
                         AsyncTask.execute(() -> {
                             MainActivity.getDbInstance().deleteVote(list.get(currentObjectId).getItemId(),
@@ -325,6 +360,19 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
         makeRecyclerView.setMetrics((int)(MainActivity.getScreenWidth()*0.9), MainActivity.getScreenWidth() / 16, MainActivity.getScreenWidth() / 12);
     }
 
+    private void updateCardBackground(CardView ticket, View button, Drawable drawable, boolean selected) {
+        runOnUiThread(() -> {
+            ticket.setBackground(drawable);
+            button.setSelected(selected);
+        });
+    }
+
+    public void updateHeader(int showingItems, int maxItems)
+    {
+        String numOfItems = "Showing "+ showingItems + " secrets out of "+ maxItems + "";
+        numOfItemsTxt.setText(numOfItems);
+    }
+
     public void showSecrets()
     {
         settingValues();
@@ -354,8 +402,12 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
                     MainActivity.getDbInstance().selectCommentsData(sublist, currentObjectId, 0); break;
                 case ADD_COMMENT:
                     MainActivity.getDbInstance().insertComment(list.get(currentObjectId).getItemId(), newComment, list.get(currentObjectId).getNumOfComments(), 0);
+                    MainActivity.getDbInstance().selectCommentsData(list, currentObjectId, 0);
+                    MainActivity.getUser(userIndex).setUsersPinned(list); break;
                 case FETCH_ITEMS:
-                    MainActivity.getDbInstance().selectUsersPinned(MainActivity.getUser(userIndex).getSecrets(nextPrev), userIndex, nextPrev, true, true);
+                    String[] arr = arrayOfBounds[nextPrev].split(",");
+                    MainActivity.getDbInstance().selectUsersPinned(MainActivity.getUser(userIndex).
+                            getSecrets(Integer.parseInt(arr[0]), Integer.parseInt(arr[1])), userIndex, nextPrev, true, true);
             }
             return null;
         }
@@ -364,15 +416,13 @@ public class Favorites  extends AppCompatActivity implements Constants, View.OnC
         protected void onPostExecute(Void result) {
             progressBarLayout.setVisibility(View.GONE);
             switch(task) {
-                case FETCH_COMMENTS:
-                    ShowComments item = new ShowComments(favorites, listName+":0", currentObjectId, TabNavigator.getTabNavigatorInstance(), theme.getGradientColors()[2], theme.getSelectedTitleColor()[2]);
-                    item.show(); break;
                 case FETCH_ITEMS:
                     showSecrets(); break;
+                case FETCH_COMMENTS:
                 case ADD_COMMENT:
-                    ShowComments showItem = new ShowComments(favorites, listName+":0", currentObjectId, TabNavigator.getTabNavigatorInstance(),
+                    ShowComments item = new ShowComments(favorites, listName+":0", currentObjectId, TabNavigator.getTabNavigatorInstance(),
                             theme.getGradientColors()[2], theme.getSelectedTitleColor()[2]);
-                    showItem.show();
+                    item.show(); break;
             }
         }
     }

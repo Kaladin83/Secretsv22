@@ -5,12 +5,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -87,6 +89,11 @@ public class TopTen extends Fragment implements Constants{
     {
         makeRecyclerView = new MakeRecyclerView(getContext(), getActivity()) {
             @Override
+            protected void updateFavoritesPanel(CardView ticket, Button button, int itemId) {
+
+            }
+
+            @Override
             public void addComment(View view)
             {
                 LinearLayout object = (LinearLayout)(view.getParent().getParent());
@@ -147,7 +154,8 @@ public class TopTen extends Fragment implements Constants{
                         LinearLayout selectedEmojisPanel = (LinearLayout) ((LinearLayout) object.getChildAt(STATUS_LAYOUT)).getChildAt(SELECTED_EMOJI_LAYOUT);
                         TextView emojiText = (TextView)selectedEmojisPanel.getChildAt(NUM_OF_EMOJIS_TXT);
                         emojiText.setText(String.valueOf(Integer.parseInt(emojiText.getText().toString()) - 1));
-                        MainActivity.getLocalStorage().removeItem(MainActivity.getTopTen().get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                       // MainActivity.getLocalStorage().removeItem(MainActivity.getTopTen().get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                        MainActivity.getLocalStorage().updateDbVotes(MainActivity.getTopTen().get(currentObjectId).getItemId(), MainActivity.getUser(0));
                         tabNavigator.recreateListView(0);
                         tabNavigator.recreateListView(1);
                         AsyncTask.execute(() -> {

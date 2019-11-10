@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 public class Util extends Application implements Constants {
     private static ArrayList<Item> list;
@@ -390,9 +391,13 @@ public class Util extends Application implements Constants {
                 tabNavigator.recreateListView(0);
                 tabNavigator.recreateListView(1);
             }
-            else
+            else if(userDataDisplay != null)
             {
                 userDataDisplay.showSecrets();
+            }
+            else
+            {
+                favorites.showSecrets();
             }
         }
     }
@@ -404,7 +409,7 @@ public class Util extends Application implements Constants {
         }
         else
         {
-            MainActivity.getLocalStorage().updateVotes(MainActivity.getUser(0), 0, list.get(currentObjectId).getItemId(), 1, 1);
+            MainActivity.getLocalStorage().updateVotes(MainActivity.getUser(0), 0, list.get(currentObjectId).getItemId(), 1);
             textField.setText(String.valueOf(numOfVotes));
         }
         addUserVote(voteType);
@@ -474,5 +479,27 @@ public class Util extends Application implements Constants {
                 str.append(item);
             }
         }
+    }
+
+    public static String appendItems(LinkedHashSet<String> setOfItems, int start, int end) {
+        StringBuilder str = new StringBuilder();
+        int i = 0;
+        for (String item: setOfItems) {
+            if (i == start)
+            {
+                str.append(item);
+            }
+
+            if (i > start && i < end){
+                str.append(",");
+                str.append(item);
+            }
+            if (i == end)
+            {
+                break;
+            }
+            i++;
+        }
+        return str.toString();
     }
 }

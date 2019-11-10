@@ -1,8 +1,11 @@
 package com.example.maratbe.secrets;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -11,7 +14,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, Constants
 {
     private static UserLocalStorage localStorage;
     private static int screenWidth, screenHeight;
@@ -86,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static void setTopTenList(ArrayList<Item> list)
     {
         topTenList = list;
-        //topTenList = (ArrayList<Item>) list.clone();
     }
 
     public static void addTag(String tag)
@@ -119,15 +121,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbInstance = new DataBase();
 
 
-      //  dbInstance.connect();
+        dbInstance.connect();
        // insert1000Items();
-      //  dbInstance.insertIntoTagListBunch();
-    //    dbInstance.insertIntoItemBunch();
-      //   dbInstance.insertIntoTagsItemsBunch();
+        //dbInstance.insertIntoTagListBunch();
+        dbInstance.insertIntoItemBunch();
+     //   dbInstance.insertIntoTagsItemsBunch();
        // dbInstance.insertIntoStatisticsBunch();
         dbInstance.selectTopTenData(false);
         dbInstance.selectAllSecretsData(0, "date", false, false);
         localStorage = new UserLocalStorage(this);
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE},1);
+            System.out.println("No permissions");
+        } else {
+            System.out.println("We do have permissions");
+        }
     }
 
 
@@ -135,22 +145,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart() {
         super.onStart();
 
-      //  localStorage.clearUserData();
-        MainActivity.setUser(localStorage.getLoggedInUser(),0);
-        if (localStorage.isLoggedIn())
-        {
-            MainActivity.getUser(0).logIn(true);
-        }
+        //localStorage.clearUserData();
         selectUserData(0);
     }
 
     public static void selectUserData(int index) {
-        dbInstance.selectUserData(users [index], index);
-        dbInstance.selectUsersSecrets(users [index].getSecrets(0), index, 0, true, false);
-        dbInstance.selectUsersComments(users [index].getComments(0), index, 0, false, false);
-        dbInstance.selectUsersPinned(users [index].getPinned(0), index, 0, true, false);
-        dbInstance.selectUsersVotes(users [index].getVotes(0), index, 0, false, true);
-        activeThemeNumber = users [index].getThemeNumber();
+        if (MainActivity.getLocalStorage().isLoggedIn()){
+            MainActivity.getLocalStorage().setUserData(MainActivity.getUser(0));
+            dbInstance.selectUsersSecrets(users[index].getSecrets(0, MAX_ITEMS_SHOWS), index, 0, true, false);
+            dbInstance.selectUsersComments(users[index].getComments(0, MAX_ITEMS_SHOWS), index, 0, false, false);
+            dbInstance.selectUsersPinned(users[index].getPinned(0, MAX_ITEMS_SHOWS), index, 0, false, false);
+            dbInstance.selectUsersVotes(users[index].getVotes(0, MAX_ITEMS_SHOWS), index, 0, false, true);
+            activeThemeNumber = users[index].getThemeNumber();
+        }
+        else
+        {
+            dbInstance.selectUserData(users [index], index);
+        }
     }
 
     @Override

@@ -288,7 +288,9 @@ public class CreateAccount extends AppCompatActivity implements Constants, View.
             Util.closeKeyboard(userEdit, this);
         } else {
             if (MainActivity.getDbInstance().selectLoginUser(email, idType) == 1) {
-                MainActivity.getLocalStorage().storeUserData(MainActivity.getUser(0));
+                MainActivity.getUser(0).logIn(true);
+               // MainActivity.getLocalStorage().setUserData(MainActivity.getUser(0));
+               // MainActivity.getLocalStorage().storeUserData(MainActivity.getUser(0));
                 new ProgressTask().execute();
             } else {
 
@@ -343,7 +345,11 @@ public class CreateAccount extends AppCompatActivity implements Constants, View.
                 email = object.getString("email");
                 String firstName = object.getString("first_name");
                 String lastName = object.getString("last_name");
-                String gender = object.getString("gender");
+                String gender = "";
+                if(object.has("birthday")){
+                    gender = object.getString("gender");
+                }
+
 
                 Profile profile = Profile.getCurrentProfile();
                 String id = profile.getId();

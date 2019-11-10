@@ -5,10 +5,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -20,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class UserDataDisplay extends AppCompatActivity implements Constants, View.OnClickListener {
+public class UserDataDisplay extends AppCompatActivity implements Constants {
 
-    private LinearLayout progressBarLayout, headerLayout;
+    private LinearLayout progressBarLayout;
     private LinearLayout.LayoutParams lParams;
     private Theme theme;
     private LinearLayoutManager layoutManager;
@@ -86,7 +88,7 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
     }
 
     private void createHeaderLayout() {
-        headerLayout = (LinearLayout) findViewById(R.id.header_layout);
+        LinearLayout headerLayout = (LinearLayout) findViewById(R.id.header_layout);
         headerLayout.setGravity(Gravity.CENTER);
         headerLayout.setOrientation(LinearLayout.VERTICAL);
         headerLayout.setId(R.id.user_display_header_layout);
@@ -112,17 +114,15 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
         {
             case "secrets":
                 numberOfItems = MainActivity.getUser(userIndex).getNumOfSecrets();
-                size = numberOfItems % MAX_ITEMS_SHOWS == 0? numberOfItems / MAX_ITEMS_SHOWS: numberOfItems / MAX_ITEMS_SHOWS +1;
-                fillUpArrays(size);break;
+                break;
             case "comments":
                 numberOfItems = MainActivity.getUser(userIndex).getNumOfItemsWithComments();
-                size = numberOfItems % MAX_ITEMS_SHOWS == 0? numberOfItems / MAX_ITEMS_SHOWS: numberOfItems / MAX_ITEMS_SHOWS +1;
-                fillUpArrays(size);break;
+                break;
             default:
                 numberOfItems = MainActivity.getUser(userIndex).getNumOfVotes();
-                size = numberOfItems % MAX_ITEMS_SHOWS == 0? numberOfItems / MAX_ITEMS_SHOWS: numberOfItems / MAX_ITEMS_SHOWS +1;
-                fillUpArrays(size);break;
         }
+        size = numberOfItems < MAX_ITEMS_SHOWS? numberOfItems: (numberOfItems % MAX_ITEMS_SHOWS == 0? numberOfItems / MAX_ITEMS_SHOWS: numberOfItems / MAX_ITEMS_SHOWS +1);
+        fillUpArrays(size);
         nowShowing = arrayOfItemIdsLengths[0];
     }
 
@@ -134,7 +134,7 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
             if (i == arrayOfItemIdsLengths.length - 1)
             {
                 arrayOfItemIdsLengths[i] = numberOfItems % MAX_ITEMS_SHOWS;
-                arrayOfBounds[i] = String.valueOf(i*MAX_ITEMS_SHOWS)+","+String.valueOf(i*10+(numberOfItems % MAX_ITEMS_SHOWS));
+                arrayOfBounds[i] = String.valueOf(i*MAX_ITEMS_SHOWS)+","+ (numberOfItems % MAX_ITEMS_SHOWS == 0? MAX_ITEMS_SHOWS :String.valueOf(i*10+(numberOfItems % MAX_ITEMS_SHOWS)));
             }
             else
             {
@@ -152,19 +152,18 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
             case "secrets":
                 listName = "GetUsersSecrets";
                 list = MainActivity.getUser(userIndex).getUsersSecrets();
-                sublist = new ArrayList<>(MainActivity.getUser(userIndex).getUsersSecrets().subList(Integer.parseInt(bounds[0]), Integer.parseInt(bounds[1]))); break;
+                 break;
             case "comments":
                 listName = "GetUsersComments";
                 list = MainActivity.getUser(userIndex).getUsersComments();
-                sublist = new ArrayList<>(MainActivity.getUser(userIndex).getUsersComments().subList(Integer.parseInt(bounds[0]), Integer.parseInt(bounds[1])));
                 txt = " that contain "+ MainActivity.getUser(userIndex).getNumOfComments() +" comments"; break;
             default:
                 listName = "GetUsersVotes";
                 list = MainActivity.getUser(userIndex).getUsersVotes();
-                sublist = new ArrayList<>(MainActivity.getUser(userIndex).getUsersVotes().subList(Integer.parseInt(bounds[0]), Integer.parseInt(bounds[1])));
                 txt = " that contain "+ MainActivity.getUser(userIndex).getNumOfVotes() +" votes"; break;
         }
 
+        sublist = new ArrayList<>(MainActivity.getUser(userIndex).getUsersSecrets().subList(Integer.parseInt(bounds[0]), Integer.parseInt(bounds[1])));
         String numOfItems = "Showing "+ Integer.parseInt(bounds[1]) + " secrets out of "+ numberOfItems + txt;
         numOfItemsTxt.setText(numOfItems);
     }
@@ -211,6 +210,11 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
     private void populateListView()
     {
         makeRecyclerView = new MakeRecyclerView(this, this) {
+            @Override
+            protected void updateFavoritesPanel(CardView ticket, Button button, int itemId) {
+
+            }
+
             @Override
             public void addComment(View view)
             {
@@ -272,7 +276,8 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
                         LinearLayout selectedEmojisPanel = (LinearLayout) ((LinearLayout) object.getChildAt(STATUS_LAYOUT)).getChildAt(SELECTED_EMOJI_LAYOUT);
                         TextView emojiText = (TextView)selectedEmojisPanel.getChildAt(NUM_OF_EMOJIS_TXT);
                         emojiText.setText(String.valueOf(Integer.parseInt(emojiText.getText().toString()) - 1));
-                        MainActivity.getLocalStorage().removeItem(list.get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                       // MainActivity.getLocalStorage().removeItem(list.get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                        MainActivity.getLocalStorage().updateDbVotes(list.get(currentObjectId).getItemId(), MainActivity.getUser(0));
                         showSecrets();
                         AsyncTask.execute(() -> {
                             MainActivity.getDbInstance().deleteVote(list.get(currentObjectId).getItemId(),
@@ -361,42 +366,6 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
         recyclerView.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId())
-        {
-            case R.id.user_display_go_up_btn:
-                nowShowing = arrayOfItemIdsLengths[0];
-                nextPrev = 0;
-                showSecrets();
-                layoutManager.scrollToPosition(0);
-                //listView.setSelection(0);
-                break;
-            case R.id.user_display_prev_btn:
-                nowShowing -= arrayOfItemIdsLengths[nextPrev];
-                nextPrev--;
-                showSecrets();
-                //listView.setSelection(0);
-                layoutManager.scrollToPosition(0);
-                break;
-            case R.id.user_display_next_btn:
-                nextPrev++;
-                nowShowing += arrayOfItemIdsLengths[nextPrev];
-                if (list.size() >= nowShowing)
-                {
-                    showSecrets();
-                    //listView.setSelection(0);
-                    layoutManager.scrollToPosition(0);
-                }
-                else
-                {
-                    task = Task.FETCH_ITEMS;
-                    new ProgressTask().execute();
-
-                }break;
-        }
-    }
-
     private class ProgressTask extends AsyncTask <Void,Void,Void>{
         @Override
         protected void onPreExecute(){
@@ -411,15 +380,20 @@ public class UserDataDisplay extends AppCompatActivity implements Constants, Vie
                     MainActivity.getDbInstance().selectCommentsData(sublist, currentObjectId, 0); break;
                 case ADD_COMMENT:
                     MainActivity.getDbInstance().insertComment(list.get(currentObjectId).getItemId(), newComment, list.get(currentObjectId).getNumOfComments(), 0);
+                    MainActivity.getDbInstance().selectCommentsData(list, currentObjectId, 0); break;
                 case FETCH_ITEMS:
+                    String[] arr = arrayOfBounds[nextPrev].split(",");
                     switch(displayData)
                     {
                         case "secrets":
-                            MainActivity.getDbInstance().selectUsersSecrets(MainActivity.getUser(userIndex).getSecrets(nextPrev), userIndex, nextPrev, true, true); break;
+                            MainActivity.getDbInstance().selectUsersSecrets(MainActivity.getUser(userIndex).
+                                    getSecrets(Integer.parseInt(arr[0]), Integer.parseInt(arr[1])), userIndex, nextPrev, true, true); break;
                         case "comments":
-                            MainActivity.getDbInstance().selectUsersComments(MainActivity.getUser(userIndex).getComments(nextPrev), userIndex, nextPrev, true, true); break;
+                            MainActivity.getDbInstance().selectUsersComments(MainActivity.getUser(userIndex).
+                                    getComments(Integer.parseInt(arr[0]), Integer.parseInt(arr[1])), userIndex, nextPrev, true, true); break;
                         case "votes":
-                            MainActivity.getDbInstance().selectUsersVotes(MainActivity.getUser(userIndex).getVotes(nextPrev), userIndex, nextPrev, true, true); break;
+                            MainActivity.getDbInstance().selectUsersVotes(MainActivity.getUser(userIndex)
+                                    .getVotes(Integer.parseInt(arr[0]), Integer.parseInt(arr[1])), userIndex, nextPrev, true, true); break;
                     }
             }
             return null;

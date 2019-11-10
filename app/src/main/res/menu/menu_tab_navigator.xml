@@ -25,5 +25,8 @@
         android:id="@+id/theme"
         android:title="@string/menu_theme"
         app:showAsAction="never"/>
-
+    <item
+        android:id="@+id/logout"
+        android:title="@string/menu_logout"
+        app:showAsAction="never"/>
 </menu>

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -364,6 +365,11 @@ public class Eavesdrops extends Fragment implements Constants, View.OnClickListe
     private void populateListView() {
         makeRecyclerView = new MakeRecyclerView(getContext(), getActivity()) {
             @Override
+            protected void updateFavoritesPanel(CardView ticket, Button button, int itemId) {
+
+            }
+
+            @Override
             public void addComment(View view) {
                 LinearLayout object = (LinearLayout) (view.getParent().getParent());
                 currentObjectId = object.getId();
@@ -445,7 +451,8 @@ public class Eavesdrops extends Fragment implements Constants, View.OnClickListe
                         LinearLayout selectedEmojisPanel = (LinearLayout) ((LinearLayout) object.getChildAt(STATUS_LAYOUT)).getChildAt(SELECTED_EMOJI_LAYOUT);
                         TextView emojiText = (TextView)selectedEmojisPanel.getChildAt(NUM_OF_EMOJIS_TXT);
                         emojiText.setText(String.valueOf(Integer.parseInt(emojiText.getText().toString()) - 1));
-                        MainActivity.getLocalStorage().removeItem(list.get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                       // MainActivity.getLocalStorage().removeItem(list.get(currentObjectId).getItemId(), MainActivity.getUser(0), "votes");
+                        MainActivity.getLocalStorage().updateDbVotes(list.get(currentObjectId).getItemId(), MainActivity.getUser(0));
                         tabNavigator.recreateListView(0);
                         tabNavigator.recreateListView(1);
                         AsyncTask.execute(() -> {
@@ -726,6 +733,7 @@ public class Eavesdrops extends Fragment implements Constants, View.OnClickListe
                     MainActivity.getDbInstance().selectItemsByTagData(selectedTagText, selectedSort, lastTagTouched); break;
                 case ADD_COMMENT:
                     MainActivity.getDbInstance().insertComment(list.get(currentObjectId).getItemId(), newComment, list.get(currentObjectId).getNumOfComments(), 0);
+                    MainActivity.getDbInstance().selectCommentsData(list, currentObjectId, 0);
             }
 
             return null;
