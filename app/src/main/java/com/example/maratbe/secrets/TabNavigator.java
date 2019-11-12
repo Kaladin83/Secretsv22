@@ -205,6 +205,8 @@ public class TabNavigator extends AppCompatActivity implements Constants, Serial
         showAnimation.setDuration(300);
         pager.setOffscreenPageLimit(3);
         pager.setCurrentItem(1);
+
+       pager.setOnPageChangeListener(this);
         /*  pager.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -344,6 +346,11 @@ public class TabNavigator extends AppCompatActivity implements Constants, Serial
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        if (position == MainActivity.getPageToRecreate())
+        {
+            recreateListView(position);
+            MainActivity.setPageToRecreate(-1);
+        }
         if (position == 1 && eavesdrops != null)
         {
            /* if (eavesdrops.getIsShrink())
@@ -355,7 +362,11 @@ public class TabNavigator extends AppCompatActivity implements Constants, Serial
 
     @Override
     public void onPageSelected(int position) {
-
+        if (position == MainActivity.getPageToRecreate())
+        {
+            recreateListView(position);
+            MainActivity.setPageToRecreate(-1);
+        }
     }
 
     @Override

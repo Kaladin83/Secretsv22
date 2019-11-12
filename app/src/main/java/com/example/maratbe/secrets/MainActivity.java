@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static ArrayList<Item> secretsList = new ArrayList<>();
     private static ArrayList<Item> itemByTagList = new ArrayList<>();
     private static User[] users = new User[2];
+    private static int pageToRecreate = -1;
 
     private static ArrayList<String> listOfTags = new ArrayList<>();
 
@@ -86,6 +87,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         secretsList = list;
     }
 
+    public static int getPageToRecreate() {
+        return pageToRecreate;
+    }
+
+    public static void setPageToRecreate(int pageToRecreate) {
+        MainActivity.pageToRecreate = pageToRecreate;
+    }
+
     public static void setTopTenList(ArrayList<Item> list)
     {
         topTenList = list;
@@ -121,10 +130,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbInstance = new DataBase();
 
 
-        dbInstance.connect();
+        //dbInstance.connect();
        // insert1000Items();
         //dbInstance.insertIntoTagListBunch();
-        dbInstance.insertIntoItemBunch();
+        //dbInstance.insertIntoItemBunch();
      //   dbInstance.insertIntoTagsItemsBunch();
        // dbInstance.insertIntoStatisticsBunch();
         dbInstance.selectTopTenData(false);

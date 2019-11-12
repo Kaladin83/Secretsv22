@@ -159,11 +159,12 @@ public class Share extends Fragment implements Constants, View.OnClickListener
                         {
                             tags[i] = ((Button)selectedTagsLayout.getChildAt(i)).getText().toString();
                         }
-                        final String text = itemTitleEdit.getText().toString() + "^|" + itemBodyEdit.getText().toString();
+                        final String text = itemTitleEdit.getText().toString() + "##" + itemBodyEdit.getText().toString();
                         AsyncTask.execute(() -> {
                             MainActivity.getDbInstance().insertItem(MainActivity.getUser(0).getUserName(), text, 0, tags, true, false);
                             MainActivity.getDbInstance().selectTags(false, false);
                             MainActivity.getDbInstance().selectAllSecretsData(0, "date", false, true);
+                            MainActivity.setPageToRecreate(0);
                         });
 
                         selectedTagsLayout.removeAllViews();

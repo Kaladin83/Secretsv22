@@ -221,7 +221,19 @@ public class DataBase implements Constants  {
         comment.setDateAdded(comment.getDateAdded().replaceAll("/", "-"));
 
         connect();
-        createInsertCommentQuery(itemId, comment, parentId);
+        createSelectNumberOfCommentsQuery(itemId);
+        returnCode = fetchData("fetchNumberOfComments", false);
+
+        query = new StringBuffer();
+        if (returnCode == -1)
+        {
+            createInsertFirstCommentQuery(itemId, comment, parentId);
+        }
+        else
+        {
+            createInsertCommentQuery(itemId, comment, parentId);
+        }
+
         if (insertData(false) == 0)
         {
             query = new StringBuffer();
@@ -583,6 +595,30 @@ public class DataBase implements Constants  {
         query.append(");");
     }
 
+    private void createSelectNumberOfCommentsQuery(int itemId) {
+        query.append("SELECT 1 FROM comments WHERE item_id = ");
+        query.append(itemId);
+        query.append(";");
+    }
+
+    private void createInsertFirstCommentQuery(int itemId, Item.Comment comment, int parentId)
+    {
+        query.append("INSERT INTO comments (comment_id, text, stars, item_id, parent_id, date_added, user_name) values(");
+        query.append(0);
+        query.append(", '");
+        query.append(comment.getText());
+        query.append("', ");
+        query.append(comment.getStars());
+        query.append(", ");
+        query.append(itemId);
+        query.append(", ");
+        query.append(parentId);
+        query.append(", '");
+        query.append(comment.getDateAdded());
+        query.append("' , '");
+        query.append(comment.getUserName()+"')");
+    }
+
     private void createInsertCommentQuery(int itemId, Item.Comment comment, int parentId)
     {
         query.append("INSERT INTO comments (comment_id, text, stars, item_id, parent_id, date_added, user_name) ");
@@ -875,6 +911,8 @@ public class DataBase implements Constants  {
                     rc = fetchUsersVotes(rset); break;
                 case "fetchUsersItemIds":
                     rc = fetchUsersItemIds(rset); break;
+                case "fetchNumberOfComments":
+                    rc = fetchNumberOfComments(rset);break;
                 default:
                     rc = 0;//fetchUserData
             }
@@ -1047,6 +1085,15 @@ public class DataBase implements Constants  {
         }
         return rc;
     }
+
+    private int fetchNumberOfComments(ResultSet rset) throws SQLException{
+        while (rset.next())
+        {
+            return 0;
+        }
+        return -1;
+    }
+
 
     private int fetchUsersItemIds(ResultSet rset) throws SQLException
     {
