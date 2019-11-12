@@ -132,10 +132,10 @@ public class CreateAccount extends AppCompatActivity implements Constants, View.
             String lName = account.getFamilyName();
             String id = account.getId();
             idType = 'G';
-            displayTxt.setText("Sign in with Google:\nEmail = "+email+"\nName = "+fName+" "+lName + "\nId = "+ id+"\nId type = "+idType);
-            saveUserData();
+//            displayTxt.setText("Sign in with Google:\nEmail = "+email+"\nName = "+fName+" "+lName + "\nId = "+ id+"\nId type = "+idType);
+            saveUserData(email, fName+" "+lName, id, "", idType);
         } catch (ApiException e) {
-            Log.w("Google Exception", "signInResult:failed code=" + e.getStatusCode());
+            Log.d("Google Exception", "signInResult:failed code=" + e.getStatusCode());
         }
     }
 
@@ -267,56 +267,92 @@ public class CreateAccount extends AppCompatActivity implements Constants, View.
         formLayout.addView(button);
     }
 
-    private void saveUserData() {
+    private void saveUserData(String email, String name, String id, String gender, char idType) {
         if (method.equals("register")) {
             if (userEdit.getText().toString().equals("")) {
                 Toast.makeText(this, "User name is mandatory", Toast.LENGTH_LONG).show();
                 setBackground(statusUserTxt, R.drawable.x);
             } else {
-                setBackground(statusUserTxt, R.drawable.check);
-                MainActivity.setUser(new User(userEdit.getText().toString(), email, idType), 0);
-                if (MainActivity.getDbInstance().insertUser(MainActivity.getUser(0)) == 0) {
-                    MainActivity.getLocalStorage().storeUserData(MainActivity.getUser(0));
-                    Toast.makeText(this, "Welcome to secrets " + userEdit.getText().toString(), Toast.LENGTH_LONG).show();
-                    TabNavigator.getTabNavigatorInstance().updateLogin(true);
-                    this.finish();
-                } else {
-                    setBackground(statusUserTxt, R.drawable.x);
-                    Toast.makeText(this, "User with this username already exists, pick different username", Toast.LENGTH_LONG).show();
-                }
+                register(email, name, id, gender, idType);
             }
             Util.closeKeyboard(userEdit, this);
         } else {
-            if (MainActivity.getDbInstance().selectLoginUser(email, idType) == 1) {
-                MainActivity.getUser(0).logIn(true);
-               // MainActivity.getLocalStorage().setUserData(MainActivity.getUser(0));
-               // MainActivity.getLocalStorage().storeUserData(MainActivity.getUser(0));
-                new ProgressTask().execute();
-            } else {
+            tryToLogin(email, idType);
+        }
+    }
 
-                String str1 = idType == 'F' ? "Facebook" : "Google";
-                String str2 = idType == 'F' ? "Google" : "Facebook";
-                String body = "Could not login with " + str1 + "\nThe email is not registered, you can try to login with " + str2;
-                alertDialog = new ShowAlertDialog(this) {
-                    @Override
-                    protected void buttonPressed(int id) {
-                        if (id == 0) {
-                            Intent intent = new Intent(account, CreateAccount.class);
-                            intent.putExtra("METHOD", "register");
-                            startActivity(intent);
-                            account.finish();
-                        } else if (id == 2) {
-                            account.finish();
-                        }
-                        alertDialog.dismiss();
-                    }
-                };
-                alertDialog.setTexts("Login error", body, new int[]{R.string.register, R.string.sign_in, R.string.not_now});
-                alertDialog.setCanceledOnTouchOutside(false);
-                Util.setDialogColors(account, alertDialog);
-                alertDialog.show();
+    private void tryToLogin(String email, char idType) {
+        if (MainActivity.getDbInstance().selectLoginUser(email, idType) == 1) {
+            login();
+        } else {
+            loginError();
+        }
+    }
+
+    private void loginError() {
+        String str1 = idType == 'F' ? "Facebook" : "Google";
+        String str2 = idType == 'F' ? "Google" : "Facebook";
+        String body = "Could not login with " + str1 + "\nThe email is not registered, you can try to login with " + str2;
+        alertDialog = new ShowAlertDialog(this) {
+            @Override
+            protected void buttonPressed(int id) {
+                if (id == 0) {
+                    Intent intent = new Intent(account, CreateAccount.class);
+                    intent.putExtra("METHOD", "register");
+                    startActivity(intent);
+                    account.finish();
+                } else if (id == 2) {
+                    account.finish();
+                }
+                alertDialog.dismiss();
+            }
+        };
+        alertDialog.setTexts("Login error", body, new int[]{R.string.register, R.string.sign_in, R.string.not_now});
+        alertDialog.setCanceledOnTouchOutside(false);
+        Util.setDialogColors(account, alertDialog);
+        alertDialog.show();
+    }
+
+    private void login() {
+        MainActivity.getUser(0).logIn(true);
+        new ProgressTask().execute();
+    }
+
+    private void register(String email, String name, String id, String gender, char idType) {
+        setBackground(statusUserTxt, R.drawable.check);
+        MainActivity.setUser(new User(userEdit.getText().toString(), this.email, idType), 0);
+        if (MainActivity.getDbInstance().checkRegisteredUser(email, name, id, gender, idType) == 1) {
+            String body = "It looks like you are already registered!\n You will be prompted to your account";
+            alertDialog = new ShowAlertDialog(this) {
+                @Override
+                protected void buttonPressed(int id) {
+                    if (id == 0) {
+                        login();
+                        account.finish();}
+                    alertDialog.dismiss();
+                }
+            };
+            alertDialog.setTexts("Hi there", body, new int[]{R.string.sign_in});
+            alertDialog.setCanceledOnTouchOutside(false);
+            Util.setDialogColors(account, alertDialog);
+            alertDialog.show();
+        }
+        else
+        {
+            if (MainActivity.getDbInstance().insertUser(MainActivity.getUser(0), name, id, gender ) == 0) {
+                loginUser("Welcome to secrets " + userEdit.getText().toString());
+            } else {
+                setBackground(statusUserTxt, R.drawable.x);
+                Toast.makeText(this, "User with this username already exists, pick different username", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    private void loginUser(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        MainActivity.getLocalStorage().storeUserData(MainActivity.getUser(0));
+        TabNavigator.getTabNavigatorInstance().updateLogin(true);
+        this.finish();
     }
 
     private void signInWithFacebook() {
@@ -343,19 +379,15 @@ public class CreateAccount extends AppCompatActivity implements Constants, View.
             try {
                 Log.i("Response", response.toString());
                 email = object.getString("email");
-                String firstName = object.getString("first_name");
-                String lastName = object.getString("last_name");
+                String fName = object.getString("first_name");
+                String lName = object.getString("last_name");
                 String gender = "";
-                if(object.has("birthday")){
+                if(object.has("gender")){
                     gender = object.getString("gender");
                 }
-
-
                 Profile profile = Profile.getCurrentProfile();
                 String id = profile.getId();
                 idType = 'F';
-                displayTxt.setText("Sign in with Facebook:\nEmail = "+email+"\nName = "+firstName+" "+lastName +
-                        "\nId = "+ id+"\nId type = "+idType);
                 String link = profile.getLinkUri().toString();
                 Log.i("Link", link);
                 if (Profile.getCurrentProfile() != null) {
@@ -363,10 +395,10 @@ public class CreateAccount extends AppCompatActivity implements Constants, View.
                 }
 
                 Log.i("Login" + "Email", email);
-                Log.i("Login" + "FirstName", firstName);
-                Log.i("Login" + "LastName", lastName);
+                Log.i("Login" + "Full name", fName+" "+lName);
+                Log.i("Login" + "id", id);
                 Log.i("Login" + "Gender", gender);
-                saveUserData();
+                saveUserData(email, fName+" "+lName, id, gender, idType);
 
             } catch (JSONException e) {
                 e.printStackTrace();

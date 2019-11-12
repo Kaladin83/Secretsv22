@@ -40,9 +40,10 @@ public class DataBase implements Constants  {
 
          //TABLE DECLARATIONS
     /*CREATE TABLE sql7311482.users ( user_id INT(10) NOT NULL AUTO_INCREMENT, user_name VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , id_type CHAR(1) NOT NULL , email varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
-    registration_date DATE NOT NULL ) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
+    registration_date DATE NOT NULL, full_name VARCHAR(40), birthday DATE, full_name, gender VARCHAR(10)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
     ALTER TABLE users ADD PRIMARY KEY( user_id, user_name, id_type, email);
     ALTER TABLE users ADD INDEX( user_id);
+    ALTER TABLE users ADD INDEX( email, full_name, birthday, gender);
 
     CREATE TABLE sql7311482.items ( item_id int(10), user_name CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , text TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,  DATE NOT NULL ,
     score int(2), comments TEXT CHARACTER SET utf8 COLLATE utf8_general_ci, votes int(6)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;
@@ -91,18 +92,26 @@ public class DataBase implements Constants  {
         }
     }
 
-    public int insertUser(User user)
+    public int checkRegisteredUser(String email, String name, String id, String gender, char idType) {
+        query = new StringBuffer();
+        connect();
+
+        createSelectUserRegisteredCheckQuery(email, name, id, gender, idType);
+        return fetchData("fetchCheckUserData", false);
+    }
+
+    public int insertUser(User user, String name, String id, String gender)
     {
         int returnCode = 0;
         query = new StringBuffer();
         connect();
 
-        createSelectUserRegisterCheckQuery(user.getUserName().toUpperCase());
+        createSelectUserNameCheckQuery(user.getUserName().toUpperCase());
         returnCode = fetchData("fetchCheckUserData", false);
         if (returnCode ==  0)
         {
             query = new StringBuffer();
-            createInsertUserQuery(user);
+            createInsertUserQuery(user, name, id, gender);
             returnCode = insertData(true);
         }
 
@@ -556,21 +565,22 @@ public class DataBase implements Constants  {
         return returnCode;
     }
 
-    private void createInsertUserQuery(User user)
+    private void createInsertUserQuery(User user, String name, String id, String gender)
     {
-        query.append("INSERT INTO users (user_name, id_type, email, registration_date) VALUES('");
+        query.append("INSERT INTO users (user_name, id_type, email, registration_date, full_name, id, gender) VALUES('");
         query.append(user.getUserName());
         query.append("', '");
         query.append(user.getIdType());
         query.append("', '");
         query.append(user.getEmail());
-        query.append("' , CURDATE()+0);");
+        query.append("' , CURDATE()+0, '").append(name).append("', '").
+                append(id).append("', '").append(gender).append("');");
     }
 
     private void createInsertNewTagQuery(String tagName) {
         query.append("INSERT into tags (tag_name) VALUES('");
         query.append(tagName);
-        query.append("';");
+        query.append("');");
     }
 
     private void createInsertItemQuery(String userName, String text, int score, int itemId)
@@ -723,7 +733,19 @@ public class DataBase implements Constants  {
         query.append(";");
     }
 
-    private void createSelectUserRegisterCheckQuery(String user)
+    private void createSelectUserRegisteredCheckQuery(String email, String name, String id, String gender, char idType) {
+        query.append("SELECT user_name, email, id_type FROM users ").
+                append("WHERE UPPER(email) = '").
+                append(email).
+                append("' and full_name = '").
+                append(name).
+                append("' and id = '").
+                append(id).
+                append("' and gender = '").
+                append(gender).append("' and id_type = '").append(idType).append("';");
+    }
+
+    private void createSelectUserNameCheckQuery(String user)
     {
         query.append("SELECT user_name, email, id_type FROM users ");
         query.append("WHERE UPPER(user_name) = '");
@@ -733,10 +755,10 @@ public class DataBase implements Constants  {
 
     private void createSelectUserLoginCheckQuery(String email, char idType)
     {
-        query.append("SELECT user_name, email, type FROM users ");
+        query.append("SELECT user_name, email, id_type FROM users ");
         query.append("WHERE UPPER(email) = '");
         query.append(email);
-        query.append("' AND type = '");
+        query.append("' AND id_type = '");
         query.append(idType);
         query.append("';");
     }
@@ -896,7 +918,7 @@ public class DataBase implements Constants  {
                 case "fetchItemsData":
                     rc = fetchItemsData(rset); break;
                 case "fetchCheckUserData":
-                    rc = fetchUserCheckData(rset); break;
+                    rc = fetchUserNameCheckData(rset); break;
                 case "fetchUserData":
                     rc = fetchUserData(rset); break;
                 case "fetchAllTagsData":
@@ -999,12 +1021,12 @@ public class DataBase implements Constants  {
         return themeNum;
     }
 
-    private int fetchUserCheckData(ResultSet rset) throws SQLException
+    private int fetchUserNameCheckData(ResultSet rset) throws SQLException
     {
         int exists = 0;
         while (rset.next())
         {
-            MainActivity.setUser(new User(rset.getString("user_name"),rset.getString("email"), rset.getString("type").charAt(0)), 0);
+            MainActivity.setUser(new User(rset.getString("user_name"),rset.getString("email"), rset.getString("id_type").charAt(0)), 0);
             exists = 1;
         }
         return exists;
@@ -1231,7 +1253,8 @@ public class DataBase implements Constants  {
     }
 
     public void insertIntoTagsItemsBunch(){
-        //connect();
+        query = new StringBuffer("delete from tags_and_items;");
+        insertData(false);
 
         query = new StringBuffer("INSERT INTO tags_and_items (tag_name, item_id) VALUES('sex', 1)");
         insertData(false);
@@ -1508,6 +1531,8 @@ public class DataBase implements Constants  {
     }
 
     public void insertIntoItemBunch(){
+        query = new StringBuffer("delete from items;");
+        insertData(false);
         query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (1, 'Maratik', 'Believe it or not, I don~t care##I fucked my teacher in 7th grade', NOW(), 5);");
         insertData(false);
         query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (2, 'Maratik', 'Lottery##I won a lottery ticket, and lost all my money on prostitutes', NOW(), 12);");
@@ -1550,25 +1575,23 @@ public class DataBase implements Constants  {
         insertData(false);
         query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (21, 'Maratik', 'I want to buy a a new car with budget of 30000$. I have a dilemma. Please suggest, what is the best choice for this budget.', NOW(), 11);");
         insertData(false);
-//        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (21, 'Maratik', 'Looking for recommendations##What is the best Sci-Fi movie you have ever watched?', NOW(), 6);");
+//        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (22, 'Maratik', 'Looking for recommendations##What is the best Sci-Fi movie you have ever watched?', NOW(), 6);");
 //        insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (22, 'Maratik', 'I~m looking for a serious relationship. I work in high-tech industry and will make my chosen lady a queen. Please contact me on facebook or Tweeter', NOW(), 3);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (23, 'Maratik', 'I~m looking for a serious relationship. I work in high-tech industry and will make my chosen lady a queen. Please contact me on facebook or Tweeter', NOW(), 3);");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (23, 'Marat2', 'Looking for new partners for Escape room activity. Please contact me via facebook', NOW(), 12);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (24, 'Marat2', 'Looking for new partners for Escape room activity. Please contact me via facebook', NOW(), 12);");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (24, 'Maratik', 'I~m gay, and I~m proud of it!!!', NOW(), 4);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (25, 'Maratik', 'I~m gay, and I~m proud of it!!!', NOW(), 4);");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (25, 'Marat2', 'Starting new job at the White House, Washington DC. I~m so exited!!!', NOW(), 5);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (26, 'Marat2', 'Starting new job at the White House, Washington DC. I~m so exited!!!', NOW(), 5);");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (26, 'Maratik', 'Hooray!!!!##5 years of treatments. I~m finally pregnant!!! Hooray!!!', NOW(), 2);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (27, 'Maratik', 'Hooray!!!!##5 years of treatments. I~m finally pregnant!!! Hooray!!!', NOW(), 2);");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (27, 'Marat2', 'Today I ate the best pizza ever. It~S called Pizza hut, who ate it and loved it as well?', NOW(), 1); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (28, 'Marat2', 'Today I ate the best pizza ever. It~S called Pizza hut, who ate it and loved it as well?', NOW(), 1); ");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (28, 'Maratik', 'Sad childhood##When I was 5 years old, I have seen my father~s friend jerking off while looking at me. I did not realize back then what he was doing, but now I do, but I don~t what to tell by daddy, he still his best friend.', NOW(), 13);");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (29, 'Maratik', 'Sad childhood##When I was 5 years old, I have seen my father~s friend jerking off while looking at me. I did not realize back then what he was doing, but now I do, but I don~t what to tell by daddy, he still his best friend.', NOW(), 13);");
         insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (29, 'Maratik', 'My first kiss was my brother in law. I think it was a pity kiss, but still it felt great. I was 16 back then.', NOW(), 14);");
-        insertData(false);
-        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (30, 'Marat2', 'Fuck it!##I don~t believe, what happened last night. I accidentally shagged by friend from high school on my wedding day.', NOW(), 15); ");
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (30, 'Maratik', 'My first kiss was my brother in law. I think it was a pity kiss, but still it felt great. I was 16 back then.', NOW(), 14);");
         insertData(false);
         query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (31, 'Marat2', 'Oh Shit...##When I was 10 years old, I accidentally killed a cat by pulling to hard on a leash which I put on him', NOW(), 16); ");
         insertData(false);
@@ -1616,6 +1639,7 @@ public class DataBase implements Constants  {
         insertData(false);
         query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (53, 'Maratik', 'Oh my god. I just witnessed in live a harsh car accident. 3 cars where smashed by a semi-trailer. I hope no one died.', NOW(), 31);");
         insertData(false);
+        query = new StringBuffer("insert into items (item_id, user_name, text, date, score) values (54, 'Marat2', 'Fuck it!##I don~t believe, what happened last night. I accidentally shagged by friend from high school on my wedding day.', NOW(), 15); ");
+        insertData(false);
     }
-
 }

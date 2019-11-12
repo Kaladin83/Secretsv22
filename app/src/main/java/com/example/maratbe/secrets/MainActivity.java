@@ -2,16 +2,23 @@ package com.example.maratbe.secrets;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, Constants
@@ -110,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main_activity);
         setDimensions();
 
+        //generateFacebookSha();
+
         Button btn = (Button) findViewById(R.id.enter_button) ;
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -129,13 +138,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         users[0] = new User();
         dbInstance = new DataBase();
 
-
-        //dbInstance.connect();
+      //  dbInstance.connect();
        // insert1000Items();
         //dbInstance.insertIntoTagListBunch();
-        //dbInstance.insertIntoItemBunch();
-     //   dbInstance.insertIntoTagsItemsBunch();
-       // dbInstance.insertIntoStatisticsBunch();
+       // dbInstance.insertIntoItemBunch();
+       // dbInstance.insertIntoTagsItemsBunch();
+      //  dbInstance.insertIntoStatisticsBunch();
         dbInstance.selectTopTenData(false);
         dbInstance.selectAllSecretsData(0, "date", false, false);
         localStorage = new UserLocalStorage(this);
@@ -146,6 +154,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             System.out.println("No permissions");
         } else {
             System.out.println("We do have permissions");
+        }
+    }
+
+    private void generateFacebookSha() {
+         try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    "com.example.maratbe.secrets",
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException  e) {
+            System.out.println("Exception generating Hash for Facebook: "+ e);
         }
     }
 
